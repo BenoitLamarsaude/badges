@@ -270,7 +270,10 @@ function buildLinkWrapper(badgeElement: HTMLElement, linkValue: string) {
       linkWrapper.setAttr('data-href', internalLinkTarget);
     }
   } else {
+    linkWrapper.addClass('external-link');
     linkWrapper.setAttr('href', linkValue);
+    linkWrapper.setAttr('target', '_blank');
+    linkWrapper.setAttr('rel', 'noopener noreferrer');
   }
 
   linkWrapper.appendChild(badgeElement);

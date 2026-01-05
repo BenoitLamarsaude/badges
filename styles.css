@@ -19,6 +19,10 @@ body {
 .inline-badge-link {
         text-decoration: none;
         color: inherit;
+        display: inline-flex;
+}
+.inline-badge-link .inline-badge {
+        cursor: pointer;
 }
 .inline-badge .inline-badge-extra::after {
 	content: ':';
