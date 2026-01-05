@@ -3,7 +3,7 @@ import { RangeSetBuilder } from "@codemirror/state"
 import { ViewPlugin, WidgetType, EditorView, ViewUpdate, Decoration, DecorationSet } from '@codemirror/view'
 import { BADGE_TYPES } from './constants';
 
-const REGEXP = /(`\[!!([^\]]*)\]`)/gm;
+const REGEXP = /(`\[!!([\s\S]*?)\]`)/gm;
 const TAGS = 'code'
 
 export default class BadgesPlugin extends Plugin {
