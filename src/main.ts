@@ -170,13 +170,13 @@ function buildBadge(text: string) {
     setIcon(iconEl, extras[1]);
     iconEl.setAttr("aria-label", extras[2]);
     // details
-    const customValue = stripLinkOption(parts[1] ?? "");
+    const [rawTitleAndOptions, ...customParts] = (parts[1] ?? "").split('|');
+    const customValue = stripLinkOption(rawTitleAndOptions ?? "");
     if (customValue.linkValue !== undefined) {
       linkValue = customValue.linkValue;
     }
 
-    let details:any[] = customValue.cleanedValue.split("|");
-    let titleContent = (details[0] ?? "").trim();
+    let titleContent = (customValue.cleanedValue ?? "").trim();
     if (titleContent.includes(';')) {
       const [title, ...optionSegments] = titleContent.split(';');
       titleContent = title.trim();
@@ -194,8 +194,8 @@ function buildBadge(text: string) {
     newEl.setAttr("data-inline-badge", attrType.toLowerCase());
     // color
     let color:string = 'currentColor';
-    if (details[1]) {
-      color = details[1].trim();
+    if (customParts[0]) {
+      color = customParts[0].trim();
     }
     newEl.setAttr("style", "--customize-badge-color: "+color+";");
     // render
