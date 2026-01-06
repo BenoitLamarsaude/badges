@@ -71,6 +71,7 @@ Badges can be made clickable by adding an optional `link` parameter after a semi
 ```markdown
 `[!!note:Reference;link=[[file.pdf]]]`
 `[!!|ghb>format:PDF;link=https://example.com/download]`
+`[!!|book-open-text|format:PDF;link=[[file.pdf]]|var(--color-red-rgb)]`
 ```
 
 

@@ -162,18 +162,6 @@ function buildBadge(text: string) {
   // title value for badge
   let badgeContent:string = parts[1].trim();
   let linkValue:string | undefined = undefined;
-  if (badgeContent.includes(';')) {
-    const contentParts = badgeContent.split(';');
-    badgeContent = contentParts[0].trim();
-    contentParts.slice(1).forEach((part) => {
-      const [rawKey, ...rawValue] = part.split('=');
-      const key = rawKey?.trim().toLowerCase();
-      const value = rawValue.join('=').trim();
-      if (key === 'link' && value.length > 0) {
-        linkValue = value;
-      }
-    });
-  }
   // custom badge
   if (extras.length == 3) {
     // icon
@@ -182,17 +170,32 @@ function buildBadge(text: string) {
     setIcon(iconEl, extras[1]);
     iconEl.setAttr("aria-label", extras[2]);
     // details
-    let details:any[] = parts[1].split("|");
+    const [rawTitleAndOptions, ...customParts] = (parts[1] ?? "").split('|');
+    const customValue = stripLinkOption(rawTitleAndOptions ?? "");
+    if (customValue.linkValue !== undefined) {
+      linkValue = customValue.linkValue;
+    }
+
+    let titleContent = (customValue.cleanedValue ?? "").trim();
+    if (titleContent.includes(';')) {
+      const [title, ...optionSegments] = titleContent.split(';');
+      titleContent = title.trim();
+      optionSegments.forEach((segment: string) => {
+        const parsedLink = parseLinkOption(segment);
+        if (parsedLink !== undefined) {
+          linkValue = parsedLink;
+        }
+      });
+    }
     // title
-    let title:string = details[0].trim();
     titleEl.addClass("inline-badge-title-inner");
-    titleEl.setText(title);
+    titleEl.setText(titleContent);
     newEl.addClass('inline-badge');
     newEl.setAttr("data-inline-badge", attrType.toLowerCase());
     // color
     let color:string = 'currentColor';
-    if (details[1]) {
-      color = details[1].trim();
+    if (customParts[0]) {
+      color = customParts[0].trim();
     }
     newEl.setAttr("style", "--customize-badge-color: "+color+";");
     // render
@@ -204,6 +207,12 @@ function buildBadge(text: string) {
     // set attrType to custom "key"
     attrType = extras.join("|");
   } else {
+    const parsedContent = stripLinkOption(parts[1] ?? "");
+    badgeContent = parsedContent.cleanedValue.trim();
+
+    if (parsedContent.linkValue !== undefined) {
+      linkValue = parsedContent.linkValue;
+    }
     if (hasExtra) {
       // Github badges
       if (extras[1].startsWith('ghb>') || extras[1].startsWith('ghs>')) {
@@ -252,6 +261,38 @@ function buildBadge(text: string) {
     }
   }
   return newEl;
+}
+
+function stripLinkOption(valueWithOptions: string): { cleanedValue: string, linkValue?: string } {
+  const segments = valueWithOptions.split(';');
+  const keptSegments: string[] = [];
+  let linkValue: string | undefined = undefined;
+
+  segments.forEach((segment: string) => {
+    const parsedLink = parseLinkOption(segment);
+    if (parsedLink !== undefined) {
+      linkValue = parsedLink;
+    } else {
+      keptSegments.push(segment);
+    }
+  });
+
+  return {
+    cleanedValue: keptSegments.join(';').trim(),
+    linkValue,
+  };
+}
+
+function parseLinkOption(optionSegment: string): string | undefined {
+  const [rawKey, ...rawValue] = optionSegment.split('=');
+  const key = rawKey?.trim().toLowerCase();
+  const value = rawValue.join('=').trim();
+
+  if (key === 'link' && value.length > 0) {
+    return value;
+  }
+
+  return undefined;
 }
 
 function buildLinkWrapper(badgeElement: HTMLElement, linkValue: string) {
