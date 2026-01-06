@@ -6,14 +6,23 @@ body {
 	--my-custom-rgb: var(--color-green-rgb);
 }
 .inline-badge {
-	display: inline-flex;
-	margin: 0;
-	padding: 0;
-	vertical-align: middle;
-	border-radius: var(--inline-badge-border-radius);
-	font-weight: 500;
-	border: var(--inline-badge-border);
-	cursor: default;
+        display: inline-flex;
+        margin: 0;
+        padding: 0;
+        vertical-align: middle;
+        border-radius: var(--inline-badge-border-radius);
+        font-weight: 500;
+        border: var(--inline-badge-border);
+        cursor: default;
+}
+
+.inline-badge-link {
+        text-decoration: none;
+        color: inherit;
+        display: inline-flex;
+}
+.inline-badge-link .inline-badge {
+        cursor: pointer;
 }
 .inline-badge .inline-badge-extra::after {
 	content: ':';

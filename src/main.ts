@@ -3,7 +3,7 @@ import { RangeSetBuilder } from "@codemirror/state"
 import { ViewPlugin, WidgetType, EditorView, ViewUpdate, Decoration, DecorationSet } from '@codemirror/view'
 import { BADGE_TYPES } from './constants';
 
-const REGEXP = /(`\[!!([^\]]*)\]`)/gm;
+const REGEXP = /(`\[!!([\s\S]*?)\](?!\])`)/gm;
 const TAGS = 'code'
 
 export default class BadgesPlugin extends Plugin {
@@ -140,20 +140,20 @@ function buildBadge(text: string) {
   let titleEl:HTMLElement = document.createElement("span");
   let textEl:HTMLElement = document.createElement("span");
   let attrType:any = "";
-	let part:string = text.substring(2);
+        let part:string = text.substring(2);
   let content:string = part.substring(part.length-1,1).trim();
   // no content
-  if (!content.length) { 
-		newEl.setText("Badges syntax error");
-		return newEl;
-	}
+  if (!content.length) {
+                newEl.setText("Badges syntax error");
+                return newEl;
+        }
   let parts:any[] = content.split(':');
   // return if NO CONTENT
   if (parts.length < 2) {
-		newEl.setText("❌ Badges syntax error");
-		newEl.setAttr("style", "color:var(--text-error)")
-		return newEl;
-	}
+                newEl.setText("❌ Badges syntax error");
+                newEl.setAttr("style", "color:var(--text-error)")
+                return newEl;
+        }
   // type of badge
   let badgeType:string = parts[0].trim();
   // build and check for extras
@@ -161,6 +161,7 @@ function buildBadge(text: string) {
   let hasExtra:boolean = extras.length > 1;
   // title value for badge
   let badgeContent:string = parts[1].trim();
+  let linkValue:string | undefined = undefined;
   // custom badge
   if (extras.length == 3) {
     // icon
@@ -169,11 +170,26 @@ function buildBadge(text: string) {
     setIcon(iconEl, extras[1]);
     iconEl.setAttr("aria-label", extras[2]);
     // details
-    let details:any[] = parts[1].split("|");
+    const customValue = stripLinkOption(parts[1] ?? "");
+    if (customValue.linkValue !== undefined) {
+      linkValue = customValue.linkValue;
+    }
+
+    let details:any[] = customValue.cleanedValue.split("|");
+    let titleContent = (details[0] ?? "").trim();
+    if (titleContent.includes(';')) {
+      const [title, ...optionSegments] = titleContent.split(';');
+      titleContent = title.trim();
+      optionSegments.forEach((segment: string) => {
+        const parsedLink = parseLinkOption(segment);
+        if (parsedLink !== undefined) {
+          linkValue = parsedLink;
+        }
+      });
+    }
     // title
-    let title:string = details[0].trim();
     titleEl.addClass("inline-badge-title-inner");
-    titleEl.setText(title);
+    titleEl.setText(titleContent);
     newEl.addClass('inline-badge');
     newEl.setAttr("data-inline-badge", attrType.toLowerCase());
     // color
@@ -191,6 +207,12 @@ function buildBadge(text: string) {
     // set attrType to custom "key"
     attrType = extras.join("|");
   } else {
+    const parsedContent = stripLinkOption(parts[1] ?? "");
+    badgeContent = parsedContent.cleanedValue.trim();
+
+    if (parsedContent.linkValue !== undefined) {
+      linkValue = parsedContent.linkValue;
+    }
     if (hasExtra) {
       // Github badges
       if (extras[1].startsWith('ghb>') || extras[1].startsWith('ghs>')) {
@@ -232,5 +254,69 @@ function buildBadge(text: string) {
     }
     newEl.appendChild(titleEl);
   }
+  if (linkValue !== undefined) {
+    const linkWrapper = buildLinkWrapper(newEl, linkValue);
+    if (linkWrapper !== undefined) {
+      return linkWrapper;
+    }
+  }
   return newEl;
+}
+
+function stripLinkOption(valueWithOptions: string): { cleanedValue: string, linkValue?: string } {
+  const segments = valueWithOptions.split(';');
+  const keptSegments: string[] = [];
+  let linkValue: string | undefined = undefined;
+
+  segments.forEach((segment: string) => {
+    const parsedLink = parseLinkOption(segment);
+    if (parsedLink !== undefined) {
+      linkValue = parsedLink;
+    } else {
+      keptSegments.push(segment);
+    }
+  });
+
+  return {
+    cleanedValue: keptSegments.join(';').trim(),
+    linkValue,
+  };
+}
+
+function parseLinkOption(optionSegment: string): string | undefined {
+  const [rawKey, ...rawValue] = optionSegment.split('=');
+  const key = rawKey?.trim().toLowerCase();
+  const value = rawValue.join('=').trim();
+
+  if (key === 'link' && value.length > 0) {
+    return value;
+  }
+
+  return undefined;
+}
+
+function buildLinkWrapper(badgeElement: HTMLElement, linkValue: string) {
+  if (!linkValue.length) {
+    return badgeElement;
+  }
+
+  const linkWrapper = document.createElement('a');
+  linkWrapper.addClass('inline-badge-link');
+
+  if (linkValue.startsWith('[[') && linkValue.endsWith(']]')) {
+    const internalLinkTarget = linkValue.substring(2, linkValue.length - 2).trim();
+    if (internalLinkTarget.length) {
+      linkWrapper.addClass('internal-link');
+      linkWrapper.setAttr('href', internalLinkTarget);
+      linkWrapper.setAttr('data-href', internalLinkTarget);
+    }
+  } else {
+    linkWrapper.addClass('external-link');
+    linkWrapper.setAttr('href', linkValue);
+    linkWrapper.setAttr('target', '_blank');
+    linkWrapper.setAttr('rel', 'noopener noreferrer');
+  }
+
+  linkWrapper.appendChild(badgeElement);
+  return linkWrapper;
 }
