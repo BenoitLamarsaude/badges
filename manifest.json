@@ -1,10 +1,10 @@
 {
-	"id": "badges",
-	"name": "Badges",
-	"version": "1.1.0",
+	"id": "badges-dev",
+	"name": "Badges (Dev)",
+	"version": "0.1.0-dev",
 	"minAppVersion": "0.15.0",
-	"description": "Add inline badges/callouts to notes.",
-	"author": "@gapmiss",
-	"authorUrl": "https://github.com/gapmiss",
+	"description": "Development build (fork) – clickable badge experiments",
+	"author": "BenLmrsd",
+	"authorUrl": "https://github.com/BenoitLamarsaude",
 	"isDesktopOnly": false
 }
