@@ -64,6 +64,16 @@ A light-weight plugin for displaying inline "badges" in [Obsidian.md](https://gi
 
 ![](assets/Badges-demo-Obsidian-v1.3.7-20230709170943.png)
 
+###### links
+
+Badges can be made clickable by adding an optional `link` parameter after a semicolon. The `link` value can be an external URL or an Obsidian wikilink.
+
+```markdown
+`[!!note:Reference;link=[[file.pdf]]]`
+`[!!|ghb>format:PDF;link=https://example.com/download]`
+`[!!|book-open-text|format:PDF;link=[[file.pdf]]|var(--color-red-rgb)]`
+```
+
 
 #### Github
 
