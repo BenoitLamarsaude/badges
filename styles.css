@@ -21,6 +21,20 @@ body {
         color: inherit;
         display: inline-flex;
 }
+.inline-badge-link-content {
+        display: inline-flex;
+        align-items: center;
+}
+.inline-badge-link-icon {
+        display: inline-flex;
+        padding-right: .35em;
+        padding-left: .05em;
+        color: inherit;
+}
+.inline-badge-link-icon svg {
+        width: 12px;
+        height: 12px;
+}
 .inline-badge-link .inline-badge {
         cursor: pointer;
 }

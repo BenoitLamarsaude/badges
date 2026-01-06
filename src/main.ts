@@ -303,12 +303,28 @@ function buildLinkWrapper(badgeElement: HTMLElement, linkValue: string) {
   const linkWrapper = document.createElement('a');
   linkWrapper.addClass('inline-badge-link');
 
+  const linkContent = document.createElement('span');
+  linkContent.addClass('inline-badge-link-content');
+  linkContent.appendChild(badgeElement);
+
+  const linkIcon = document.createElement('span');
+  linkIcon.addClass('inline-badge-link-icon');
+  setIcon(linkIcon, 'external-link');
+  linkIcon.setAttr('aria-hidden', 'true');
+  linkContent.appendChild(linkIcon);
+
   if (linkValue.startsWith('[[') && linkValue.endsWith(']]')) {
     const internalLinkTarget = linkValue.substring(2, linkValue.length - 2).trim();
     if (internalLinkTarget.length) {
       linkWrapper.addClass('internal-link');
       linkWrapper.setAttr('href', internalLinkTarget);
       linkWrapper.setAttr('data-href', internalLinkTarget);
+
+      const stopLinkHover = (event: Event) => {
+        event.stopPropagation();
+      };
+      linkWrapper.addEventListener('mouseenter', stopLinkHover, true);
+      linkWrapper.addEventListener('mouseover', stopLinkHover, true);
     }
   } else {
     linkWrapper.addClass('external-link');
@@ -317,6 +333,6 @@ function buildLinkWrapper(badgeElement: HTMLElement, linkValue: string) {
     linkWrapper.setAttr('rel', 'noopener noreferrer');
   }
 
-  linkWrapper.appendChild(badgeElement);
+  linkWrapper.appendChild(linkContent);
   return linkWrapper;
 }
